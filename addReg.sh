@@ -27,7 +27,7 @@ function getServiceType()
 {
 
     # array with domains
-    TYPES=("REST" "GraphQL")
+    TYPES=("GQL" "REST" "SOAP_1_1" "WS")
 
     # seed random generator
     RANDOM=$$$(date +%s)
@@ -39,31 +39,26 @@ function getServiceType()
 
 
 
-array=( WSO2 K8S )
-for i in "${array[@]}"
-do
-	regId=$(curl -k -H "Authorization: Bearer $accessToken" -H "Content-Type: application/json" -X POST --data-binary '{"name":"'$i'","type":"WSO2","mode":"READONLY"}' https://localhost:9443/api/am/endpoint-registry/v1/registries  | jq -r '.id')
+strings=(
+    "WSO2 Registry"
+    "K8S Endpoints"
+)
+for i in "${strings[@]}"; do
+    echo 'curl -k -H "Authorization: Bearer $accessToken" -H "Content-Type: application/json" -X POST --data-binary "{\"name\":\"'$i'\",\"type\":\"WSO2\",\"mode\":\"READONLY\"}" "https://localhost:9443/api/am/endpoint-registry/v1/registries"';
+
+	regId=$(curl -k -H "Authorization: Bearer $accessToken" -H "Content-Type: application/json" -X POST --data-binary "{\"name\":\"'$i'\",\"type\":\"WSO2\",\"mode\":\"READONLY\"}" https://localhost:9443/api/am/endpoint-registry/v1/registries  | jq -r '.id')
     echo "==============================================================="
     echo $regId
-    echo "================= Adding registry entries for $i ======================"
-    for j in {1..2}
-    do
-        getServiceType
-        echo $RANDOM_SERVICE_TYPE
-        entryId=$(curl -k -X POST "https://localhost:9443/api/am/endpoint-registry/v1/registries/$regId/entry" -H "Authorization: Bearer $accessToken" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F 'registryEntry={ "entryName": "Pizzashack-Endpoint'$j'", "productionServiceUrl": "http://localhost/pizzashack", "sandboxServiceUrl": "http://localhost/pizzashack", "serviceCategory": "UTILITY", "serviceType": "'$RANDOM_SERVICE_TYPE'", "definitionType": "OAS", "metadata": "{ \"mutualTLS\" : true }" };type=application/json'  | jq -r '.id')
-        echo "=======================Add Registry entry ID========================================"
-        echo $entryId
-        echo "===================================================================================="
-    done
+    if [ -n "$regId" ]; then
+        echo "================= Adding registry entries for $i ======================"
+        for j in {1..2}
+        do
+            getServiceType
+            echo $RANDOM_SERVICE_TYPE
+            entryId=$(curl -k -X POST "https://localhost:9443/api/am/endpoint-registry/v1/registries/$regId/entry" -H "Authorization: Bearer $accessToken" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F 'registryEntry={ "entryName": "Pizzashack-Endpoint'$j'", "productionServiceUrl": "http://localhost/pizzashack", "sandboxServiceUrl": "http://localhost/pizzashack", "serviceCategory": "UTILITY", "serviceType": "'$RANDOM_SERVICE_TYPE'", "definitionType": "OAS", "metadata": "{ \"mutualTLS\" : true }" };type=application/json'  | jq -r '.id')
+            echo "=======================Add Registry entry ID========================================"
+            echo $entryId
+            echo "===================================================================================="
+        done
+    fi
 done
-
-
-# for i in {1..2}
-#     do
-#         regId=$(curl -k -H "Authorization: Bearer $accessToken" -H "Content-Type: application/json" -X POST --data-binary '{"name":"WSO2 Dev Registry'$i'","type":"WSO2","mode":"READONLY"}' https://localhost:9443/api/am/endpoint-registry/v1/registries  | jq -r '.id')
-#         echo "==============================================================="
-#         echo $regId
-#     done
-#curl -k -H "Authorization: Bearer 24b0a3ae-1d15-31b7-bbc1-673d682c3944" -H "Content-Type: application/json" -X GET "https://localhost:9443/api/am/endpoint-registry/v1/registries" -H "accept: application/json"
-
-

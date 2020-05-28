@@ -39,14 +39,3 @@ echo "==============================================================="
    echo $deleteRes
 
 done
-
-
-# for i in {1..2}
-#     do
-#         regId=$(curl -k -H "Authorization: Bearer $accessToken" -H "Content-Type: application/json" -X POST --data-binary '{"name":"WSO2 Dev Registry'$i'","type":"WSO2","mode":"READONLY"}' https://localhost:9443/api/am/endpoint-registry/v1/registries  | jq -r '.id')
-#         echo "==============================================================="
-#         echo $regId
-#     done
-#curl -k -H "Authorization: Bearer 24b0a3ae-1d15-31b7-bbc1-673d682c3944" -H "Content-Type: application/json" -X GET "https://localhost:9443/api/am/endpoint-registry/v1/registries" -H "accept: application/json"
-
-
